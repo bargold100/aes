@@ -58,7 +58,7 @@ def read_as_byte(my_file):
 
 def write_as_byte(my_file,message):
     print("message row 60")
-    message = str(bytes(message))
+    message = (bytes(message)).decode('utf-8')
     f = open(my_file, "w")
     f.write(message)
     f.close()
@@ -133,7 +133,7 @@ cipher_1_ours_bytes = read_as_byte("test_cipher_short.txt")
 cipher_1_josh = read_as_byte("cipher_short.txt")
 
 print(cipher_1_ours_bytes)
-print(cipher_1_josh.decode('cp1250'))
+
 
 
 # test1 = CompareFiles("test_cipher_short.txt","cipher_short.txt")
