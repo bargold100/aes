@@ -1,3 +1,5 @@
+###  parameters ###
+
 s_box = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -38,6 +40,10 @@ inv_s_box = (
 k1=b''
 k2=b''
 
+
+##### FUNCTIONS ========
+
+
 def SubBytes(plantext, sbox):
     subyte_list =[]
     for i in plantext:
@@ -51,6 +57,8 @@ def read_as_byte(my_file):
     return data
 
 def write_as_byte(my_file,message):
+    print("message row 60")
+    message = str(bytes(message))
     f = open(my_file, "w")
     f.write(message)
     f.close()
@@ -63,11 +71,10 @@ def bitwise_xor(subyte, key):
 
 def pharse16(mybyts):
     list_to_return =[]
-    my_len = len(mybyts)
-    double16 = my_len/16
-
-    for i in double16:
-        list_to_return.append(mybyts[i*16:i*16+16])
+    my_len = len(mybyts)*8
+    double16 = int(my_len/16)
+    for i in range(double16):
+        list_to_return.append(mybyts[i*2:i*2+2])
 
     return list_to_return
 
@@ -83,6 +90,10 @@ def inv_aes(m,k):
 
 def e(message_path, key_path, output_path):
     my_keys_byte = read_as_byte(key_path)
+    print(my_keys_byte)
+    #check
+    to16 = pharse16(my_keys_byte)
+    print(to16)
     k1, k2 = pharse16(my_keys_byte)
 
     message = read_as_byte(message_path)
@@ -94,5 +105,36 @@ def d(message_path, key_path, output_path):
     k1, k2 = pharse16(my_keys_byte)
 
     message = read_as_byte(message_path)
-    plaintext = inv_aes(inv_aes(message,k1),k2)
+    plaintext = inv_aes(inv_aes(message,k2),k1)
     write_as_byte(output_path, plaintext)
+
+def CompareFiles(path1,path2):
+
+    file1 = open(path1, "r")
+    file2 = open(path2, "r")
+    flag =True
+    i = 0
+    for line1 in file1:
+
+        for line2 in file2:
+            if line1 == line2:
+                continiue
+            else:
+                flag=False
+            break
+    f1.close()
+    f2.close()
+    return flag
+
+######## CHECKINGS #######
+
+e("message_short.txt", "keys_short.txt", "test_cipher_short.txt")
+cipher_1_ours_bytes = read_as_byte("test_cipher_short.txt")
+cipher_1_josh = read_as_byte("cipher_short.txt")
+
+print(cipher_1_ours_bytes)
+print(cipher_1_josh.decode('cp1250'))
+
+
+# test1 = CompareFiles("test_cipher_short.txt","cipher_short.txt")
+# print( "test1 result: " + test1)
