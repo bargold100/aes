@@ -146,6 +146,7 @@ def b(message_path, cipher_path, key_path):
 
     message = read_as_byte(message_path)
     cipher = read_as_byte(cipher_path)
+    print(pharse16(message))
     m1,m2 = pharse16(message)
     c1,c2 = pharse16(cipher)
     encription_dict= defaultdict(list)
@@ -180,7 +181,12 @@ def b(message_path, cipher_path, key_path):
             for key1 in key_candidates1:
                 for key2 in key_candidates2:
                     if bytes(aes(aes(m2,key1),key2)) == c2:
-                        return (key1,key2)
+                        # key1+=key2
+                        # write_as_byte(key1)
+                        # return (key1,key2)
+                        return (key1, key2)
+
+
 
         #generating new key
         generate_key = Add_One(generate_key)
@@ -193,4 +199,4 @@ def b(message_path, cipher_path, key_path):
 
 
 
-b(message_path, cipher_path, key_path)
+print(b("to_break_message_1.txt", "to_break_cipher_1.txt", "test_b_key1.txt"))
