@@ -116,11 +116,9 @@ def d(cipher_path, key_path, output_path):
 def Add_One(key_int_list):
     #input string
     key_in_str_bin = ''.join([str(x) for x in key_int_list])
-    print(key_in_str_bin)
     one = "0000000000000001"
     sum = bin(int(key_in_str_bin, 2) + int(one, 2))
     # Printing result
-    print("result1 in add")
     result_int_list = [int(x) for x in sum[2:]]
     #ripud to 16
     len_l= len(result_int_list)
@@ -146,9 +144,13 @@ def b(message_path, cipher_path, key_path):
 
     message = read_as_byte(message_path)
     cipher = read_as_byte(cipher_path)
-    print(pharse16(message))
-    m1,m2 = pharse16(message)
-    c1,c2 = pharse16(cipher)
+    message_list = pharse16(message)
+    cipher_list = pharse16(cipher)
+    m1 =message_list[0]
+    m2 = message_list[1]
+    c1= cipher_list[0]
+    c2 = cipher_list[1]
+
     encription_dict= defaultdict(list)
     decription_dict = defaultdict(list)
     generate_key = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -156,16 +158,12 @@ def b(message_path, cipher_path, key_path):
     final_keys=[]
     for i in range(256):
         bytes_generate_key = bytes(generate_key)
-        e1=aes(m1,bytes_generate_key)
-        d1= inv_aes(c1,bytes_generate_key)
+        e1=bytes(aes(m1,bytes_generate_key))
+        d1= bytes(inv_aes(c1,bytes_generate_key))
         #encription
         encription_dict[e1].append(bytes_generate_key)
         #decription
         decription_dict[d1].append(bytes_generate_key)
-
-
-        e1 = aes(m1, bytes_generate_key)
-        d1 = inv_aes(c1, bytes_generate_key)
 
         if len(decription_dict[e1]) >=1:
             key2_candidates = decription_dict[e1]
@@ -198,5 +196,5 @@ def b(message_path, cipher_path, key_path):
 ######## CHECKINGS #######
 
 
-
-print(b("to_break_message_1.txt", "to_break_cipher_1.txt", "test_b_key1.txt"))
+print(Add_One([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]))
+#print(b("to_break_message_1.txt", "to_break_cipher_1.txt", "test_b_key1.txt"))
