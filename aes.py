@@ -57,11 +57,10 @@ def read_as_byte(my_file):
     return data
 
 def write_as_byte(my_file,message):
-    print("message row 60")
-    message = (bytes(message)).decode('utf-8')
-    f = open(my_file, "w")
-    f.write(message)
-    f.close()
+    with open(my_file, "wb") as binary_file:
+        # Write bytes to file
+        binary_file.write(bytes(message))
+
 
 def bitwise_xor(subyte, key):
     xor_res = []
@@ -89,52 +88,31 @@ def inv_aes(m,k):
 
 
 def e(message_path, key_path, output_path):
-    my_keys_byte = read_as_byte(key_path)
-    print(my_keys_byte)
-    #check
-    to16 = pharse16(my_keys_byte)
-    print(to16)
-    k1, k2 = pharse16(my_keys_byte)
-
-    message = read_as_byte(message_path)
-    ciphertext = aes(aes(message,k1),k2)
-    write_as_byte(output_path, ciphertext)
-
-def d(message_path, key_path, output_path):
+    united_cipher_blocks = []
     my_keys_byte = read_as_byte(key_path)
     k1, k2 = pharse16(my_keys_byte)
 
     message = read_as_byte(message_path)
-    plaintext = inv_aes(inv_aes(message,k2),k1)
-    write_as_byte(output_path, plaintext)
+    message_pharse = pharse16(message)
+    for block in message_pharse:
+        ciphertext = aes(aes(block,k1),k2)
+        united_cipher_blocks += ciphertext
+    write_as_byte(output_path, united_cipher_blocks)
 
-def CompareFiles(path1,path2):
 
-    file1 = open(path1, "r")
-    file2 = open(path2, "r")
-    flag =True
-    i = 0
-    for line1 in file1:
+def d(cipher_path, key_path, output_path):
+    united_message_blocks = []
+    my_keys_byte = read_as_byte(key_path)
+    k1, k2 = pharse16(my_keys_byte)
+    cipher = read_as_byte(cipher_path)
+    cipher_pharse = pharse16(cipher)
+    for block in cipher_pharse:
+        plaintext = inv_aes(inv_aes(block,k2),k1)
+        united_message_blocks += plaintext
+    write_as_byte(output_path, united_message_blocks)
 
-        for line2 in file2:
-            if line1 == line2:
-                continiue
-            else:
-                flag=False
-            break
-    f1.close()
-    f2.close()
-    return flag
 
 ######## CHECKINGS #######
 
-e("message_short.txt", "keys_short.txt", "test_cipher_short.txt")
-cipher_1_ours_bytes = read_as_byte("test_cipher_short.txt")
-cipher_1_josh = read_as_byte("cipher_short.txt")
+d("cipher_long.txt", "keys_long.txt", "testd_message_long.txt")
 
-print(cipher_1_ours_bytes)
-
-
-
-# test1 = CompareFiles("test_cipher_short.txt","cipher_short.txt")
-# print( "test1 result: " + test1)
