@@ -1,4 +1,5 @@
 ###  parameters ###
+from collections import defaultdict
 
 s_box = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -51,8 +52,8 @@ def SubBytes(plantext, sbox):
     return subyte_list
 
 def read_as_byte(my_file):
-    in_file = open(my_file, "rb") # opening for [r]eading as [b]inary
-    data = in_file.read() # if you only wanted to read 512 bytes, do .read(512)
+    in_file = open(my_file, "rb")
+    data = in_file.read()
     in_file.close()
     return data
 
@@ -112,9 +113,84 @@ def d(cipher_path, key_path, output_path):
         united_message_blocks += plaintext
     write_as_byte(output_path, united_message_blocks)
 
+def Add_One(key_int_list):
+    #input string
+    key_in_str_bin = ''.join([str(x) for x in key_int_list])
+    print(key_in_str_bin)
+    one = "0000000000000001"
+    sum = bin(int(key_in_str_bin, 2) + int(one, 2))
+    # Printing result
+    print("result1 in add")
+    result_int_list = [int(x) for x in sum[2:]]
+    #ripud to 16
+    len_l= len(result_int_list)
+    to_16_int = [0]*(16-len_l)
+    to_16_int += result_int_list
+    #sum_int_list = [int(x, 2) for x in sum_list[2:]]
+    #convert to list of ints
+    return to_16_int
+
+def Check_equal_byte_arrays(bytelist1,bytelist2):
+    flag = True
+    if len(bytelist1) != len(bytelist2):
+        return False
+    for i in range(0,len(bytelist1)):
+        if bytelist1[i] != bytelist2[i]:
+            flag = False
+            break
+
+    return flag
+
+def b(message_path, cipher_path, key_path):
+    #parsing+reading +arguments
+
+    message = read_as_byte(message_path)
+    cipher = read_as_byte(cipher_path)
+    m1,m2 = pharse16(message)
+    c1,c2 = pharse16(cipher)
+    encription_dict= defaultdict(list)
+    decription_dict = defaultdict(list)
+    generate_key = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+    final_keys=[]
+    for i in range(256):
+        bytes_generate_key = bytes(generate_key)
+        e1=aes(m1,bytes_generate_key)
+        d1= inv_aes(c1,bytes_generate_key)
+        #encription
+        encription_dict[e1].append(bytes_generate_key)
+        #decription
+        decription_dict[d1].append(bytes_generate_key)
+
+
+        e1 = aes(m1, bytes_generate_key)
+        d1 = inv_aes(c1, bytes_generate_key)
+
+        if len(decription_dict[e1]) >=1:
+            key2_candidates = decription_dict[e1]
+            key1_candidates = encription_dict[e1]
+            for key1 in key1_candidates:
+                for key2 in key2_candidates:
+                    if bytes(aes(aes(m2,key1),key2)) == c2:
+                        return (key1,key2)
+
+        if len(encription_dict[d1]) >= 1:
+            key_candidates1 = encription_dict[d1]
+            key_candidates2 = decription_dict[d1]
+            for key1 in key_candidates1:
+                for key2 in key_candidates2:
+                    if bytes(aes(aes(m2,key1),key2)) == c2:
+                        return (key1,key2)
+
+        #generating new key
+        generate_key = Add_One(generate_key)
+
+
+
+
 
 ######## CHECKINGS #######
 
-d("cipher_long.txt", "keys_long.txt", "testd_message_long.txt")
 
-#fin1234
+
+b(message_path, cipher_path, key_path)
