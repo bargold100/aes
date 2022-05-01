@@ -62,6 +62,7 @@ def write_as_byte(my_file,message):
         binary_file.write(bytes(message))
 
 
+
 def bitwise_xor(subyte, key):
     xor_res = []
     for i in range(len(subyte)):
