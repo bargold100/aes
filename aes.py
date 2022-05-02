@@ -113,20 +113,6 @@ def d(cipher_path, key_path, output_path):
         united_message_blocks += plaintext
     write_as_byte(output_path, united_message_blocks)
 
-def Add_One(key_int_list):
-    #input string
-    key_in_str_bin = ''.join([str(x) for x in key_int_list])
-    one = "0000000000000001"
-    sum = bin(int(key_in_str_bin, 2) + int(one, 2))
-    # Printing result
-    result_int_list = [int(x) for x in sum[2:]]
-    #ripud to 16
-    len_l= len(result_int_list)
-    to_16_int = [0]*(16-len_l)
-    to_16_int += result_int_list
-    #sum_int_list = [int(x, 2) for x in sum_list[2:]]
-    #convert to list of ints
-    return to_16_int
 
 def Check_equal_byte_arrays(bytelist1,bytelist2):
     flag = True
@@ -140,8 +126,7 @@ def Check_equal_byte_arrays(bytelist1,bytelist2):
     return flag
 
 def b(message_path, cipher_path, key_path):
-    #parsing+reading +arguments
-
+    #parameters
     message = read_as_byte(message_path)
     cipher = read_as_byte(cipher_path)
     message_list = pharse16(message)
@@ -150,51 +135,57 @@ def b(message_path, cipher_path, key_path):
     m2 = message_list[1]
     c1= cipher_list[0]
     c2 = cipher_list[1]
+    all_keys_candidate = []
 
-    encription_dict= defaultdict(list)
-    decription_dict = defaultdict(list)
-    generate_key = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    #initialize keys part1
+    my_dict= defaultdict(list)
+    x=0
+    y=0
 
-    final_keys=[]
+
     for i in range(256):
-        bytes_generate_key = bytes(generate_key)
-        e1=bytes(aes(m1,bytes_generate_key))
-        d1= bytes(inv_aes(c1,bytes_generate_key))
-        #encription
-        encription_dict[e1].append(bytes_generate_key)
-        #decription
-        decription_dict[d1].append(bytes_generate_key)
+        for j in range(256):
+            permotation_key = [x,y]
+            e1 = bytes(aes(m1, permotation_key))
+            # encription
+            my_dict[e1].append(permotation_key)
+            #key++
+            y+=1
+        y=0
+        x+=1
 
-        if len(decription_dict[e1]) >=1:
-            key2_candidates = decription_dict[e1]
-            key1_candidates = encription_dict[e1]
-            for key1 in key1_candidates:
-                for key2 in key2_candidates:
-                    if bytes(aes(aes(m2,key1),key2)) == c2:
-                        return (key1,key2)
+    ##initialize keys part2
+    x = 0
+    y = 0
+    for i in range(256):
+        for j in range(256):
+            permotation_key = [x, y]
+            d1 = bytes(inv_aes(c1, permotation_key))
+            if len(my_dict[d1]) > 0:
+                key1 = my_dict.get(d1)[0]
+                key2 = permotation_key
+                if bytes(aes(aes(m2, key1), key2)) == c2:
+                    all_keys_candidate.append((key1, key2))
+            y+=1
+        y=0
+        x+=1
 
-        if len(encription_dict[d1]) >= 1:
-            key_candidates1 = encription_dict[d1]
-            key_candidates2 = decription_dict[d1]
-            for key1 in key_candidates1:
-                for key2 in key_candidates2:
-                    if bytes(aes(aes(m2,key1),key2)) == c2:
-                        # key1+=key2
-                        # write_as_byte(key1)
-                        # return (key1,key2)
-                        return (key1, key2)
-
-
-
-        #generating new key
-        generate_key = Add_One(generate_key)
-
-
-
-
+    #check the right key
+    num_of_succsess = 0
+    for key1,key2 in all_keys_candidate:
+        for i in range(len(message_list)):
+            if bytes(aes(aes(message_list[i], key1), key2)) == cipher_list[i]:
+                num_of_succsess+=1
+        if num_of_succsess == len(message_list):
+            the_key = key1 + key2
+            write_as_byte(key_path, the_key)
+        num_of_succsess = 0
 
 ######## CHECKINGS #######
 
 
-print(Add_One([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]))
-#print(b("to_break_message_1.txt", "to_break_cipher_1.txt", "test_b_key1.txt"))
+#print(Add_One([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]))
+#e("message_short.txt", "keys_short.txt","test_cipher_short.txt")
+b("to_break_message_2.txt", "to_break_cipher_2.txt", "test_b_key2.txt")
+
+
